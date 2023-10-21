@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">GitHubRepositoriesApp</string>
+
+    <string name="repository_item_stars">Stars - </string>
+
+    <string name="repository_details_stars">Stars - </string>
+    <string name="repository_details_forks">Forks - </string>
+    <string name="repository_details_language">Language - </string>
+    <string name="repository_details_button">Open GitHub</string>
+</resources>
