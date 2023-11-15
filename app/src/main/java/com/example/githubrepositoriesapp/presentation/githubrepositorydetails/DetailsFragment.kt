@@ -52,6 +52,61 @@ class DetailsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_repositroy_details, container, false)
+        id?.let { viewModel.getRepositoryByTagAndId(it) }
+        handleBackPress()
+        initView(view)
+        observeData()
+        return view
+    }
+
+    private fun handleBackPress() {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            navigateBack()
+        }
+    }
+
+    private fun observeData() {lifecycleScope.launch {
+        viewModel.detailsUiState.collectLatest { uiState ->
+            when (uiState) {
+                is DetailsUiState.Success -> {
+                    with(uiState) {
+                        tvName.text = data?.name
+                        context?.let {
+                            Glide
+                                .with(it)
+                                .load(data?.owner?.avatarUrl)
+                                .centerCrop()
+                                .into(ivAvatar)
+                        }
+                        tvDescription.text = data?.description
+                        tvStars.text = data?.stars.toString()
+                        tvForks.text = data?.forksCount.toString()
+                        tvLanguage.text = data?.language
+                        btnOpenGithub.setOnClickListener {
+                            val uri =
+                                Uri.parse(data?.url)
+                            val intent = Intent(Intent.ACTION_VIEW, uri)
+                            startActivity(intent)
+                        }
+                    }
+                    hideLoading()
+                }
+
+                is DetailsUiState.Loading -> {
+                    showLoading()
+                }
+
+                is DetailsUiState.Error -> {
+                    hideLoading()
+                    clDetailsView.visibility = View.INVISIBLE
+                    Toast.makeText(context, uiState.errorMessage, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+    }
+
+    private fun initView(view: View) {
         clDetailsView = view.findViewById(R.id.clDetailsView)
         tvName = view.findViewById(R.id.tvRepoName)
         ivAvatar = view.findViewById(R.id.ivAvatar)
@@ -61,59 +116,6 @@ class DetailsFragment : Fragment() {
         tvLanguage = view.findViewById(R.id.tvLanguage)
         btnOpenGithub = view.findViewById(R.id.btnGitHub)
         pbLoading = view.findViewById(R.id.pbLoading)
-
-        return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            navigateBack()
-        }
-        id?.let { viewModel.getRepositoryByTagAndId(it) }
-        initView()
-    }
-
-    private fun initView() {
-        lifecycleScope.launch {
-            viewModel.detailsUiState.collectLatest { uiState ->
-                when (uiState) {
-                    is DetailsUiState.Success -> {
-                        with(uiState) {
-                            tvName.text = data?.name
-                            context?.let {
-                                Glide
-                                    .with(it)
-                                    .load(data?.owner?.avatarUrl)
-                                    .centerCrop()
-                                    .into(ivAvatar)
-                            }
-                            tvDescription.text = data?.description
-                            tvStars.text = data?.stars.toString()
-                            tvForks.text = data?.forksCount.toString()
-                            tvLanguage.text = data?.language
-                            btnOpenGithub.setOnClickListener {
-                                val uri =
-                                    Uri.parse(data?.url)
-                                val intent = Intent(Intent.ACTION_VIEW, uri)
-                                startActivity(intent)
-                            }
-                        }
-                        hideLoading()
-                    }
-
-                    is DetailsUiState.Loading -> {
-                        showLoading()
-                    }
-
-                    is DetailsUiState.Error -> {
-                        hideLoading()
-                        clDetailsView.visibility = View.INVISIBLE
-                        Toast.makeText(context, uiState.errorMessage, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        }
     }
 
     private fun navigateBack() {

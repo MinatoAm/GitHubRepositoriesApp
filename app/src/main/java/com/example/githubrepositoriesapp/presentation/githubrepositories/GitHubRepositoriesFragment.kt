@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.githubrepositoriesapp.R
 import com.example.githubrepositoriesapp.presentation.githubrepositories.adapter.GitHubRepositoriesAdapter
 import com.example.githubrepositoriesapp.presentation.githubrepositorydetails.DetailsFragment
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -38,7 +37,6 @@ class GitHubRepositoriesFragment : Fragment() {
     private fun onRepositoryItemClick(id: Int) {
 
         val fragment = DetailsFragment()
-
         val bundle = Bundle()
         bundle.putInt("id", id)
         fragment.arguments = bundle
@@ -62,7 +60,7 @@ class GitHubRepositoriesFragment : Fragment() {
     }
 
     private fun observeData() {
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             viewModel.showData.collectLatest {
                 gitHubRepositoriesAdapter.submitData(lifecycle, it)
             }
